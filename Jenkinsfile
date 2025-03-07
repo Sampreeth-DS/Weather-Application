@@ -5,7 +5,7 @@ pipeline {
         DOCKER_IMAGE = "sampreethds10/weather-app"
         DOCKER_CREDENTIALS = 'docker-hub-credentials'
         GIT_CREDENTIALS = 'github-credentials'
-        HELM_CHART_PATH = '$WORKDIR/Weather-App-Helm-Chart'
+        HELM_CHART_PATH = './Weather-App-Helm-Chart'
     }
 
     stages {
