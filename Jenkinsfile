@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Clone Git Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Sampreeth-DS/Weather-Application.git'
+                checkout scm
 
                 script {
                     def versionFile = readFile('version.txt').trim()
@@ -19,7 +19,7 @@ pipeline {
                     def majorVersion = versionParts[0].toInteger()
                     def minorVersion = versionParts[1].toInteger()
 
-                    if (minorVersion == 9) {
+                    if (minorVersion == 10) {
                         majorVersion += 1
                         minorVersion = 0
                     } else {
@@ -65,10 +65,12 @@ pipeline {
                 script {
                     try {
                         withDockerRegistry([credentialsId: DOCKER_CREDENTIALS, url: '']) {
-                            sh "docker push $DOCKER_IMAGE:$NEW_VERSION"
-                            sh "docker tag $DOCKER_IMAGE:$NEW_VERSION $DOCKER_IMAGE:latest"
-                            sh "docker push $DOCKER_IMAGE:latest"
-                            sh "docker rmi $DOCKER_IMAGE:$NEW_VERSION"
+                            sh """
+                            docker push $DOCKER_IMAGE:$NEW_VERSION
+                            docker tag $DOCKER_IMAGE:$NEW_VERSION $DOCKER_IMAGE:latest
+                            docker push $DOCKER_IMAGE:latest
+                            docker rmi $DOCKER_IMAGE:$NEW_VERSION
+                            """
                         }
                     } catch (Exception e) {
                         echo "Error while pushing image to Docker Hub!!!"
@@ -81,13 +83,7 @@ pipeline {
         stage('Approval for the deployment') {
             steps {
                 script {
-                    def userInput = input message: "Do you want to deploy this version?", parameters: [
-                        choice(name: 'Approval', choices: ['Approve', 'Reject'], description: 'Select Approve to proceed or Reject to stop.')
-                    ]
-
-                    if (userInput == 'Reject') {
-                        error("Deployment Rejected. Stopping Pipeline.")
-                    }
+                    input message: "Approve deployment to the DEV for version $NEW_VERSION?"
                 }
             }
         }
@@ -109,14 +105,7 @@ pipeline {
         stage('Approval from the DEV team') {
             steps {
                 script {
-                    def userInput = input message: "Do you want to approve this version?", parameters: [
-                        choice(name: 'Approval', choices: ['Approve', 'Reject'], description: 'Select Approve to proceed or Reject to stop.')
-                    ]
-
-                    if (userInput == 'Reject') {
-                        sh "helm rollback weather-app -n dev"
-                        error("Dev deployment failed! Rolling back Dev and stopping pipeline.")
-                    }
+                    input message: "Approve deployment to the TEST for version $NEW_VERSION?"
                 }
             }
         }
@@ -138,14 +127,7 @@ pipeline {
         stage('Approval from TEST team') {
             steps {
                 script {
-                    def userInput = input message: "Do you want to approve this version?", parameters: [
-                        choice(name: 'Approval', choices: ['Approve', 'Reject'], description: 'Select Approve to proceed or Reject to stop.')
-                    ]
-
-                    if (userInput == 'Reject') {
-                        sh "helm rollback weather-app -n test"
-                        error("Test deployment failed! Rolling back Test and stopping pipeline.")
-                    }
+                    input message: "Approve deployment to the PROD for version $NEW_VERSION?"
                 }
             }
         }
