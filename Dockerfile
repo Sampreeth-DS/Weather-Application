@@ -11,7 +11,7 @@ COPY Weather-App-Django /Weather-App/
 RUN pip install -r requirements.txt
 
 # Expose the port the app runs on
-EXPOSE 8000
+EXPOSE 9000
 
 # Run the application
 CMD ["python", "manage.py", "runserver", "0.0.0.0:9000"]
