@@ -93,7 +93,7 @@ pipeline {
                 script {
                     try {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n dev -f $HELM_CHART_PATH/dev_values.yaml --set image.tag=$NEW_VERSION"
-                        sleep(30)
+                        sleep(60)
 
                         if (sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31001", returnStdout: true).trim() != "200") {
                             sh "helm rollback weather-app -n dev"
@@ -121,7 +121,7 @@ pipeline {
                 script {
                     try {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n test -f $HELM_CHART_PATH/test_values.yaml --set image.tag=$NEW_VERSION"
-                        sleep(30)
+                        sleep(60)
 
                         if (sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31002", returnStdout: true).trim() != "200") {
                             sh "helm rollback weather-app -n test"
@@ -149,7 +149,7 @@ pipeline {
                 script {
                     try {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n prod -f $HELM_CHART_PATH/prod_values.yaml --set image.tag=$NEW_VERSION"
-                        sleep(30)
+                        sleep(60)
 
                         if (sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31003", returnStdout: true).trim() != "200") {
                             sh "helm rollback weather-app -n prod"
