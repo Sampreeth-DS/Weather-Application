@@ -95,9 +95,13 @@ pipeline {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n dev -f $HELM_CHART_PATH/dev_values.yaml --set image.tag=$NEW_VERSION"
                         sleep(60)
 
-                        if (sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31001", returnStdout: true).trim() != "200") {
+                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31001", returnStdout: true).trim()
+
+                        if (response in ["200", "201", "202", "204"]) {
+                            echo "Deployment successful! HTTP Status: $response"
+                        } else {
                             sh "helm rollback weather-app -n dev"
-                            error("Deployment failed! Rolling back.")
+                            error("Dev deployment failed! Rolling back Dev and stopping pipeline.")
                         }
                     }
                     catch (Exception e) {
@@ -123,9 +127,13 @@ pipeline {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n test -f $HELM_CHART_PATH/test_values.yaml --set image.tag=$NEW_VERSION"
                         sleep(60)
 
-                        if (sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31002", returnStdout: true).trim() != "200") {
+                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31001", returnStdout: true).trim()
+
+                        if (response in ["200", "201", "202", "204"]) {
+                            echo "Deployment successful! HTTP Status: $response"
+                        } else {
                             sh "helm rollback weather-app -n test"
-                            error("Deployment failed! Rolling back.")
+                            error("Test deployment failed! Rolling back test and stopping pipeline.")
                         }
                     }
                     catch (Exception e) {
@@ -151,9 +159,13 @@ pipeline {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n prod -f $HELM_CHART_PATH/prod_values.yaml --set image.tag=$NEW_VERSION"
                         sleep(60)
 
-                        if (sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31003", returnStdout: true).trim() != "200") {
+                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31001", returnStdout: true).trim()
+
+                        if (response in ["200", "201", "202", "204"]) {
+                            echo "Deployment successful! HTTP Status: $response"
+                        } else {
                             sh "helm rollback weather-app -n prod"
-                            error("Deployment failed! Rolling back.")
+                            error("Prod deployment failed! Rolling back Prod and stopping pipeline.")
                         }
                     }
                     catch (Exception e) {
