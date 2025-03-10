@@ -49,18 +49,31 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t $DOCKER_IMAGE:$NEW_VERSION ."
+                    try {
+                        sh "docker build -t $DOCKER_IMAGE:$NEW_VERSION ."
+                    }
+                    catch (Exception e) {
+                        echo "Error while building the image!!!"
+                        error("Stopping pipeline due to image build failure.")
+                    } 
                 }
             }
         }
 
         stage('Push Image to Docker Hub') {
             steps {
-                withDockerRegistry([credentialsId: DOCKER_CREDENTIALS, url: '']) {
-                    sh "docker push $DOCKER_IMAGE:$NEW_VERSION"
-                    sh "docker tag $DOCKER_IMAGE:$NEW_VERSION $DOCKER_IMAGE:latest"
-                    sh "docker push $DOCKER_IMAGE:latest"
-                    sh "docker rmi $DOCKER_IMAGE:$NEW_VERSION"
+                script {
+                    try {
+                        withDockerRegistry([credentialsId: DOCKER_CREDENTIALS, url: '']) {
+                            sh "docker push $DOCKER_IMAGE:$NEW_VERSION"
+                            sh "docker tag $DOCKER_IMAGE:$NEW_VERSION $DOCKER_IMAGE:latest"
+                            sh "docker push $DOCKER_IMAGE:latest"
+                            sh "docker rmi $DOCKER_IMAGE:$NEW_VERSION"
+                        }
+                    } catch (Exception e) {
+                        echo "Error while pushing image to Docker Hub!!!"
+                        error("Stopping pipeline due to Docker push failure.")
+                    }
                 }
             }
         }
