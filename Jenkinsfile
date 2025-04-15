@@ -95,7 +95,7 @@ pipeline {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n dev -f $HELM_CHART_PATH/dev_values.yaml --set image.tag=$NEW_VERSION"
                         sleep(60)
 
-                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.58.2:31001", returnStdout: true).trim()
+                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31001", returnStdout: true).trim()
 
                         if (response in ["200", "201", "202", "204"]) {
                             echo "Deployment successful! HTTP Status: $response"
@@ -127,7 +127,7 @@ pipeline {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n test -f $HELM_CHART_PATH/test_values.yaml --set image.tag=$NEW_VERSION"
                         sleep(60)
 
-                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.58.2:31001", returnStdout: true).trim()
+                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31001", returnStdout: true).trim()
 
                         if (response in ["200", "201", "202", "204"]) {
                             echo "Deployment successful! HTTP Status: $response"
@@ -159,7 +159,7 @@ pipeline {
                         sh "helm upgrade --install weather-app $HELM_CHART_PATH -n prod -f $HELM_CHART_PATH/prod_values.yaml --set image.tag=$NEW_VERSION"
                         sleep(60)
 
-                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.58.2:31001", returnStdout: true).trim()
+                        def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://192.168.49.2:31001", returnStdout: true).trim()
 
                         if (response in ["200", "201", "202", "204"]) {
                             echo "Deployment successful! HTTP Status: $response"
